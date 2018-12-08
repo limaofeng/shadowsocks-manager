@@ -1,12 +1,6 @@
 FROM ubuntu:18.04
 MAINTAINER gyteng <igyteng@gmail.com>
 
-COPY . /ssmgr
-
-WORKDIR /ssmgr
-
-RUN pwd && ls
-
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \
     apt-get install tzdata iproute2 curl git sudo software-properties-common python-pip -y && \
@@ -16,8 +10,11 @@ RUN apt-get update && \
     echo "Asia/Shanghai" > /etc/timezone && \
     rm /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
+    
+COPY . /ssmgr
 
-# npm i -g shadowsocks-manager --unsafe-perm && \
-RUN npm install && npm link /ssmgr
+WORKDIR /ssmgr
+
+RUN npm link /ssmgr
 
 CMD ["/usr/bin/ssmgr"]

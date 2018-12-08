@@ -5,7 +5,7 @@ steps:
     args: ["run", "build"]
   - name: "gcr.io/cloud-builders/docker"
     args:
-      [ "build", "-t ${_USERNAME}/${_REPO_NAME}", "-f docker/ubuntu/Dockerfile", "." ]
+      [ "build", "-t", "${_USERNAME}/${_REPO_NAME}", "-f", "docker/ubuntu/Dockerfile", "." ]
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args: ["-c", "docker login --username=${_USERNAME} --password=$$PASSWORD"]
