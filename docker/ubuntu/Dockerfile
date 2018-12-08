@@ -1,10 +1,6 @@
 FROM ubuntu:18.04
 MAINTAINER gyteng <igyteng@gmail.com>
 
-COPY . /ssmgr
-
-WORKDIR /ssmgr
-
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \
     apt-get install tzdata iproute2 curl git sudo software-properties-common python-pip -y && \
@@ -14,6 +10,10 @@ RUN apt-get update && \
     echo "Asia/Shanghai" > /etc/timezone && \
     rm /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
+    
+COPY . /ssmgr
+
+WORKDIR /ssmgr
 
 RUN npm link /ssmgr
 
