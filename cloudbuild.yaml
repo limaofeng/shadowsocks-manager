@@ -1,0 +1,26 @@
+steps:
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["install"]
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["run", "build"]
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [ "build", "-t ${_USERNAME}/${_REPO_NAME}", "." ]
+    secretEnv: ["PM2_PUBLIC_KEY", "PM2_SECRET_KEY"]
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: "bash"
+    args: ["-c", "docker login --username=${_USERNAME} --password=$$PASSWORD"]
+    secretEnv: ["PASSWORD"]
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "${_USERNAME}/${_REPO_NAME}"]
+images:
+  - "${_USERNAME}/${_REPO_NAME}"
+secrets:
+  - kmsKeyName: projects/gothic-depth-219813/locations/global/keyRings/keyrings-registry/cryptoKeys/key-registry
+    secretEnv:
+      PASSWORD: CiQAnu4BO652K9j8pPr4slt85qEDUQDwTV7/+aJzpszQWiw9kIkSNAAlH5Y8ha+J4utLt2c2rKL0kC5sjJzsQAmtBgYDUqKOwW+dYMdBvIrM4klXa96qf0WAiuY=
+      PM2_PUBLIC_KEY: CiQAnu4BO5+fUZCgC+BQBvaMpHH9BRjqiGrozRisMqyvwi+iRF0SOAAlH5Y8offjGlca3UcdgahlFFx0g4VNKtkT4aa4p3QpYVRoCM1L5ZcEaD32G8UcBMvoibz1KMUj
+      PM2_SECRET_KEY: CiQAnu4BO0R43F3ryLF8v1fp2B9ZtXRQk69aBri/P8pnvZaV/uASNwAlH5Y8H+2lwsLFoGoJHwAqXsG2zXkHAFYQ2xOKoo7+R2I8JD8UHD/ii7fsH9KTYOrLPfOsU+I=
+substitutions:
+  _USERNAME: limaofeng
+  _REPO_NAME: ssmgr
