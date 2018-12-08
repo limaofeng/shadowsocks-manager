@@ -6,7 +6,6 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args:
       [ "build", "-t ${_USERNAME}/${_REPO_NAME}", "." ]
-    secretEnv: ["PM2_PUBLIC_KEY", "PM2_SECRET_KEY"]
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args: ["-c", "docker login --username=${_USERNAME} --password=$$PASSWORD"]
