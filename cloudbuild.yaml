@@ -15,9 +15,9 @@ steps:
 images:
   - "${_USERNAME}/${_REPO_NAME}"
 secrets:
-  - kmsKeyName: projects/gothic-depth-219813/locations/global/keyRings/keyrings-registry/cryptoKeys/key-registry
+  - kmsKeyName: projects/vpser-d4aae/locations/global/keyRings/default/cryptoKeys/default
     secretEnv:
-      PASSWORD: CiQAnu4BO652K9j8pPr4slt85qEDUQDwTV7/+aJzpszQWiw9kIkSNAAlH5Y8ha+J4utLt2c2rKL0kC5sjJzsQAmtBgYDUqKOwW+dYMdBvIrM4klXa96qf0WAiuY=
+      PASSWORD: CiQAFtIQkebU11h4FtOmmjr3zdx3676uu4gb1UwbhM6qeydq69sSNAAdbQI+ZzcgFAZpmUxLRBznVJ7e7sjCkstIuvgAu9jNrOOharaxi1pmohS0fgiwkWX4A+A=
 substitutions:
   _USERNAME: limaofeng
   _REPO_NAME: ssmgr
