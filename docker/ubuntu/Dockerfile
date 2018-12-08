@@ -15,6 +15,7 @@ COPY . /ssmgr
 
 WORKDIR /ssmgr
 
+RUN pwd && ls
 # npm i -g shadowsocks-manager --unsafe-perm && \
 RUN npm install && npm link /ssmgr
 
