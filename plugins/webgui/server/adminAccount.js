@@ -1,10 +1,24 @@
 const macAccount = appRequire('plugins/macAccount/index');
 const account = appRequire('plugins/account/index');
+const flow = appRequire('plugins/flowSaver/flow');
 const dns = require('dns');
 const net = require('net');
 const knex = appRequire('init/knex').knex;
 
 const formatMacAddress = mac => mac.replace(/-/g, '').replace(/:/g, '').toLowerCase();
+
+function unit1000To1024(size) {
+  let num = 0;
+  while(size > 1000){
+    size /= 1000;
+    num++;
+  }
+  while(num > 0){
+    size *= 1024;
+    num--;
+  }
+  return size;
+}
 
 exports.getMacAccount = (req, res) => {
   const userId = +req.query.userId;
@@ -175,8 +189,35 @@ exports.getSubscribeAccountForUser = async (req, res) => {
         if(ssr === '1') {
           return 'ssr://' + urlsafeBase64(s.host + ':' + (subscribeAccount.account.port + s.shift) + ':origin:' + s.method + ':plain:' + urlsafeBase64(subscribeAccount.account.password) +  '/?obfsparam=&remarks=' + urlsafeBase64(s.name) + '&group=' + urlsafeBase64(baseSetting.title));
         }
-        return 'ss://' + Buffer.from(s.method + ':' + subscribeAccount.account.password + '@' + s.host + ':' + (subscribeAccount.account.port +  + s.shift)).toString('base64') + '#' + s.name;
+        // 更好的适配 Quantumult
+        return 'ss://' + Buffer.from(s.method + ':' + subscribeAccount.account.password).toString('base64') + '@' + s.host + ':' + (subscribeAccount.account.port + s.shift) + '/?plugin=&group=' + urlsafeBase64(baseSetting.title) + '#' + s.name;
       }).join('\r\n');
+
+      // Quantumult 中显示使用量
+      const myAccount = subscribeAccount.account;
+      const myServers = subscribeAccount.server;
+      const data = myAccount.data;
+
+      const time = {
+        '2': 7 * 24 * 3600000,
+        '3': 30 * 24 * 3600000,
+        '4': 24 * 3600000,
+        '5': 3600000,
+      };
+
+      const timeArray = [data.create, data.create + time[myAccount.type]];
+      if (data.create <= Date.now()) {
+        let i = 0;
+        while (data.create + i * time[myAccount.type] <= Date.now()) {
+          timeArray[0] = data.create + i * time[myAccount.type];
+          timeArray[1] = data.create + (i + 1) * time[myAccount.type];
+          i++;
+        }
+      }
+
+      const flowLimit = data.flow * (myAccount.multiServerFlow ? 1 : myServers.length);
+      const currentFlow = (await flow.getServerPortFlowWithScale(null, myAccount.id, timeArray, myAccount.multiServerFlow))[0];
+      res.setHeader('subscription-userinfo', `upload=0; download=${unit1000To1024(currentFlow)}; total=${unit1000To1024(flowLimit)}`);
       return res.send(Buffer.from(result).toString('base64'));
     }
   } catch (err) {
