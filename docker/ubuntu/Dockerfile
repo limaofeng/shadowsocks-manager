@@ -5,8 +5,6 @@ COPY . /ssmgr
 
 WORKDIR /ssmgr
 
-RUN pwd && ls
-
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \
     apt-get install tzdata iproute2 curl git sudo software-properties-common python-pip -y && \
@@ -17,7 +15,6 @@ RUN apt-get update && \
     rm /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
-# npm i -g shadowsocks-manager --unsafe-perm && \
-RUN npm install && npm link /ssmgr
+RUN npm link /ssmgr
 
 CMD ["/usr/bin/ssmgr"]
