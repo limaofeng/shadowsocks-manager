@@ -159,7 +159,7 @@ const urlsafeBase64 = str => {
 
 exports.getSubscribeAccountForUser = async (req, res) => {
   try {
-    const ssr = req.query.ssr;
+    const type = req.query.type;
     const resolveIp = req.query.ip;
     const token = req.params.token;
     const ip = req.headers['x-real-ip'] || req.connection.remoteAddress;
@@ -186,11 +186,14 @@ exports.getSubscribeAccountForUser = async (req, res) => {
         key: 'base'
       }).then(s => s[0]).then(s => JSON.parse(s.value));
       const result = subscribeAccount.server.map(s => {
-        if(ssr === '1') {
-          return 'ssr://' + urlsafeBase64(s.host + ':' + (subscribeAccount.account.port + s.shift) + ':origin:' + s.method + ':plain:' + urlsafeBase64(subscribeAccount.account.password) +  '/?obfsparam=&remarks=' + urlsafeBase64(s.name) + '&group=' + urlsafeBase64(baseSetting.title));
+        switch(type) {
+          case 'ss':
+            return 'ss://' + Buffer.from(s.method + ':' + subscribeAccount.account.password + '@' + s.host + ':' + (subscribeAccount.account.port +  + s.shift)).toString('base64') + '#' + Buffer.from(s.name).toString('base64');
+            // return 'ssr://' + urlsafeBase64(s.host + ':' + (subscribeAccount.account.port + s.shift) + ':origin:' + s.method + ':plain:' + urlsafeBase64(subscribeAccount.account.password) +  '/?obfsparam=&remarks=' + urlsafeBase64(s.name) + '&group=' + urlsafeBase64(baseSetting.title));
+          default:
+            // 更好的适配 Quantumult
+            return 'ss://' + Buffer.from(s.method + ':' + subscribeAccount.account.password).toString('base64') + '@' + s.host + ':' + (subscribeAccount.account.port + s.shift) + '/?plugin=&group=' + urlsafeBase64(baseSetting.title) + '#' + s.name;
         }
-        // 更好的适配 Quantumult
-        return 'ss://' + Buffer.from(s.method + ':' + subscribeAccount.account.password).toString('base64') + '@' + s.host + ':' + (subscribeAccount.account.port + s.shift) + '/?plugin=&group=' + urlsafeBase64(baseSetting.title) + '#' + s.name;
       }).join('\r\n');
 
       // Quantumult 中显示使用量

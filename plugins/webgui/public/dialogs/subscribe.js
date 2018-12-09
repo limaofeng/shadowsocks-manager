@@ -23,6 +23,12 @@ app.factory('subscribeDialog', [ '$mdDialog', '$http', ($mdDialog, $http) => {
     return $http.put(`/api/user/account/${ publicInfo.accountId }/subscribe`);
   };
   publicInfo.updateSubscribe = updateSubscribe;
+  publicInfo.getSurgeLink = (data) => {
+    const url = 'https://api.vpsny.app/tools/ss2surge/configs'; 
+      return $http.post(url, data).then(data => {
+        return data.data;
+      });
+  };
   let dialogPromise = null;
   const isDialogShow = () => {
     if(dialogPromise && !dialogPromise.$$state.status) {
@@ -39,16 +45,34 @@ app.factory('subscribeDialog', [ '$mdDialog', '$http', ($mdDialog, $http) => {
       $scope.publicInfo = bind;
       const config = configManager.getConfig();
       $scope.changeLinkType = () => {
-        $scope.publicInfo.subscribeLink = `${ config.site }/api/user/account/subscribe/${ $scope.publicInfo.token }${ $scope.publicInfo.linkType === 'ssr' ? '?ssr=1' : '?ssr=0' }&ip=${ $scope.publicInfo.ip}`;
+        if($scope.publicInfo.linkType === 'surge'){
+          if($scope.publicInfo.subscribeLink === 'loading'){
+            $scope.publicInfo.getSurgeLink({
+              id: $scope.publicInfo.token,
+              name: 'SS-VPSNY',
+              ss: `${ config.site}/api/user/account/subscribe/${$scope.publicInfo.token}?type=quan&ip=${$scope.publicInfo.ip}`,
+              template: 'https://raw.githubusercontent.com/ConnersHua/Profiles/master/SurgeNG.conf'
+            }).then(url => {
+              $scope.publicInfo.subscribeLink = url;
+            });
+          }
+        }else{
+          $scope.publicInfo.subscribeLink = `${ config.site }/api/user/account/subscribe/${ $scope.publicInfo.token }?type=${$scope.publicInfo.linkType}&ip=${ $scope.publicInfo.ip}`;
+        }
       };
       $scope.publicInfo.getSubscribe().then(success => {
         $scope.publicInfo.token = success.data.subscribe;
-        $scope.publicInfo.subscribeLink = `${ config.site }/api/user/account/subscribe/${ $scope.publicInfo.token }${ $scope.publicInfo.linkType === 'ssr' ? '?ssr=1': '?ssr=0' }&ip=${ $scope.publicInfo.ip}`;
+        $scope.publicInfo.subscribeLink = `${ config.site }/api/user/account/subscribe/${ $scope.publicInfo.token }?type=${$scope.publicInfo.linkType}&ip=${ $scope.publicInfo.ip}`;
       });
+      $scope.publicInfo.surgeLink = () => {
+        $scope.publicInfo.linkType = 'surge';
+        $scope.publicInfo.subscribeLink = 'loading';
+        
+      };
       $scope.publicInfo.updateLink = () => {
         $scope.publicInfo.updateSubscribe().then(success => {
           $scope.publicInfo.token = success.data.subscribe;
-          $scope.publicInfo.subscribeLink = `${ config.site }/api/user/account/subscribe/${ $scope.publicInfo.token }${ $scope.publicInfo.linkType === 'ssr' ? '?ssr=1': '?ssr=0' }&ip=${ $scope.publicInfo.ip}`;
+          $scope.publicInfo.subscribeLink = `${ config.site }/api/user/account/subscribe/${ $scope.publicInfo.token }?type=${$scope.publicInfo.linkType}&ip=${ $scope.publicInfo.ip}`;
         });
       };
       $scope.toast = () => {
